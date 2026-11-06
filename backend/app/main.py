@@ -2,7 +2,7 @@ import csv
 import io
 from datetime import datetime
 
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func
@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from . import models as m, schemas as s
 from .config import settings
-from .database import Base, engine, get_db
+from .database import get_db
 from .security import (
     hash_password,
     verify_password,
@@ -34,8 +34,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# As tabelas são criadas pelo Alembic (alembic upgrade head)
-# Base.metadata.create_all(bind=engine)
+# As tabelas do banco são criadas pelo Alembic (alembic upgrade head).
 
 
 # ---------------------------------------------------------------------------
