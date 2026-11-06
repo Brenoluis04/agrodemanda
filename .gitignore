@@ -1,0 +1,20 @@
+# Variáveis de ambiente (senhas) — o .env.example continua versionado
+.env
+frontend/.env
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node
+node_modules/
+dist/
+
+# Editor e sistema
+.vscode/
+.DS_Store
+Thumbs.db
+*.log
