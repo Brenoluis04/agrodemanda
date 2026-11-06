@@ -6,7 +6,7 @@ Sistema municipal de gestão das demandas rurais de Santa Cruz do Capibaribe/PE.
 - Front-end: React 18, TypeScript, Vite, CSS responsivo, Recharts e React Router.
 - Back-end: Python 3.12, FastAPI, API REST, SQLAlchemy 2, Alembic e JWT.
 - Banco: PostgreSQL 16.
-- Execução local: PostgreSQL, FastAPI e Vite, sem Docker.
+- Execução local: PostgreSQL, FastAPI e Vite.
 
 ## Funcionalidades implementadas
 - Cadastro de usuário agricultor e login por e-mail/senha.
@@ -19,7 +19,7 @@ Sistema municipal de gestão das demandas rurais de Santa Cruz do Capibaribe/PE.
 - Filtros, mapa de links geográficos (OpenStreetMap) e exportação CSV.
 - Dados iniciais para demonstração.
 
-## Pré-requisitos (sem Docker)
+## Pré-requisitos
 - PostgreSQL instalado e em execução localmente.
 - Python 3.11 ou 3.12 e Node.js 20+ com npm.
 - Criar o banco de dados `agrodemanda` no PostgreSQL (pelo pgAdmin ou SQL: `CREATE DATABASE agrodemanda;`).
