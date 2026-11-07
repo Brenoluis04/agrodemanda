@@ -36,29 +36,54 @@ export function DashboardPage() {
   const [data, setData] = useState<Dashboard | null>(null);
   const [demands, setDemands] = useState<Demand[]>([]);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const isFarmer = user?.role === 'farmer';
+  const userId = user?.id;
 
   useEffect(() => {
-    if (!isFarmer) {
-      Promise.all([api<Dashboard>('/dashboard'), api<Demand[]>('/demands')])
-        .then(([dashboard, list]) => {
+    // Aguarda o usuário carregar antes de decidir quais rotas chamar
+    if (!user) return;
+
+    let cancelled = false;
+    setLoading(true);
+    setError('');
+
+    const request = isFarmer
+      ? api<Demand[]>('/demands').then((list) => {
+        if (cancelled) return;
+        setData(null);
+        setDemands(list);
+      })
+      : Promise.all([api<Dashboard>('/dashboard'), api<Demand[]>('/demands')]).then(
+        ([dashboard, list]) => {
+          if (cancelled) return;
           setData(dashboard);
           setDemands(list.slice(0, 5));
-        })
-        .catch((e) => setError(e.message));
-    } else {
-      api<Demand[]>('/demands')
-        .then(setDemands)
-        .catch((e) => setError(e.message));
-    }
-  }, [user]);
+        },
+      );
+
+    request
+      .catch((e) => {
+        if (!cancelled) setError(e.message ?? 'Erro ao carregar os dados.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, isFarmer]);
+
+  const firstName = user?.name?.split(' ')[0];
 
   return (
     <>
       <Heading
         eyebrow="PAINEL DE CONTROLE"
-        title={isFarmer ? 'Olá, ' + user?.name.split(' ')[0] + '!' : 'Visão geral'}
+        title={isFarmer ? (firstName ? `Olá, ${firstName}!` : 'Olá!') : 'Visão geral'}
         sub={
           isFarmer
             ? 'Acompanhe suas solicitações e registre novas necessidades.'
@@ -73,10 +98,14 @@ export function DashboardPage() {
 
       {error && <div className="error">{error}</div>}
 
-      {isFarmer ? (
-        <FarmerOverview demands={demands} />
-      ) : (
-        data && <StaffOverview data={data} demands={demands} />
+      {loading && !error && <p>Carregando...</p>}
+
+      {!loading && !error && (
+        isFarmer ? (
+          <FarmerOverview demands={demands} />
+        ) : (
+          data && <StaffOverview data={data} demands={demands} />
+        )
       )}
     </>
   );
@@ -100,8 +129,14 @@ function FarmerOverview({ demands }: { demands: Demand[] }) {
 
 function StaffOverview({ data, demands }: { data: Dashboard; demands: Demand[] }) {
   const awaiting = (data.by_status['Pendente'] || 0) + (data.by_status['Em análise'] || 0);
-  const statusEntries = Object.entries(data.by_status);
-  const pieData = statusEntries.map(([name, value]) => ({ name, value })).filter((x) => x.value > 0);
+
+  // A cor é atribuída uma única vez, pelo índice original, e usada no gráfico e na legenda
+  const statusEntries = Object.entries(data.by_status).map(([name, value], i) => ({
+    name,
+    value,
+    color: CHART_COLORS[i % CHART_COLORS.length],
+  }));
+  const pieData = statusEntries.filter((x) => x.value > 0);
 
   return (
     <>
@@ -144,7 +179,9 @@ function StaffOverview({ data, demands }: { data: Dashboard; demands: Demand[] }
           </div>
           <div>
             <span>Tempo médio de atendimento</span>
-            <b>{data.average_days} dias</b>
+            <b>
+              {data.average_days} {data.average_days === 1 ? 'dia' : 'dias'}
+            </b>
             <small>considerando demandas concluídas</small>
           </div>
         </div>
@@ -161,7 +198,10 @@ function StaffOverview({ data, demands }: { data: Dashboard; demands: Demand[] }
           </div>
           <div className="chart">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.by_community} margin={{ top: 10, right: 8, left: -22, bottom: 35 }}>
+              <BarChart
+                data={data.by_community ?? []}
+                margin={{ top: 10, right: 8, left: -22, bottom: 35 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
                   dataKey="name"
@@ -197,19 +237,19 @@ function StaffOverview({ data, demands }: { data: Dashboard; demands: Demand[] }
                   outerRadius={82}
                   paddingAngle={3}
                 >
-                  {statusEntries.map(([name], i) => (
-                    <Cell key={name} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                  {pieData.map((entry) => (
+                    <Cell key={entry.name} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
             <div className="legend">
-              {statusEntries.map(([name, value], i) => (
-                <div key={name}>
-                  <i style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
-                  {name}
-                  <b>{value}</b>
+              {statusEntries.map((entry) => (
+                <div key={entry.name}>
+                  <i style={{ background: entry.color }} />
+                  {entry.name}
+                  <b>{entry.value}</b>
                 </div>
               ))}
             </div>
