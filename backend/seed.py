@@ -1,4 +1,4 @@
-"""Popula o banco com dados de demonstração.
+"""Popula o banco com dados de demonstração."""
 
 from datetime import datetime, timedelta
 
