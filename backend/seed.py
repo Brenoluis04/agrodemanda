@@ -1,9 +1,5 @@
 """Popula o banco com dados de demonstração.
 
-Pré-requisito: as tabelas já devem existir (rode `alembic upgrade head` antes).
-O script é seguro para rodar mais de uma vez: se o administrador já existe,
-nada é criado.
-"""
 from datetime import datetime, timedelta
 
 from app.database import SessionLocal
