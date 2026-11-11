@@ -210,3 +210,9 @@ Confira o arquivo gerado em `alembic/versions/` antes de aplicar e versione-o no
 
 - O arquivo `backend/.env` contém senhas e **não é versionado** (está no `.gitignore`). O `.env.example` mostra o formato.
 - Os dados criados pelo `seed.py` são de demonstração.
+
+GRUPO:
+Breno Luis da Silva Santos - 01796237
+Dayvson Vinicius Farias Barros - 01809518
+Gustavo Andrey Monteiro Da silva - 01777302
+Luiz Antônio Ezequiel Gomes- 01702887
